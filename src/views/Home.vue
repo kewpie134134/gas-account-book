@@ -1,11 +1,158 @@
 <template>
   <div>
-    <h1>Home コンポーネントだよ</h1>
+    <v-card>
+      <v-card-title>
+        <!-- 月選択 -->
+        <v-col cols="8">
+          <v-menu
+            ref="menu"
+            v-model="menu"
+            :close-on-content-click="false"
+            :return-value.sync="yearMonth"
+            transition="scale-transition"
+            offset-y
+            max-width="290px"
+            min-width="290px"
+          >
+            <template v-slot:activator="{ on }">
+              <v-text-field
+                v-model="yearMonth"
+                prepend-icon="mdi-calendar"
+                readonly
+                v-on="on"
+                hide-details
+              />
+            </template>
+            <v-date-picker
+              v-model="yearMonth"
+              type="month"
+              color="green"
+              locale="ja-jp"
+              no-title
+              scrollable
+            >
+              <v-spacer />
+              <v-btn text color="grey" @click="menu = false">キャンセル</v-btn>
+              <v-btn text color="primary" @click="$refs.menu.save(yearMonth)"
+                >選択</v-btn
+              >
+            </v-date-picker>
+          </v-menu>
+        </v-col>
+        <v-spacer />
+        <!-- 追加ボタン -->
+        <v-col class="text-right" cols="4">
+          <v-btn dark color="green">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </v-col>
+        <!-- 検索フォーム -->
+        <!-- v-model で入力したデータを this.search と同期する -->
+        <!-- append-iconは検索アイコン、single-line は1行のみ記入可能 -->
+        <!-- hide-details は文字カウントなどを非表示にする -->
+        <v-col cols="12">
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          />
+        </v-col>
+      </v-card-title>
+      <!-- テーブル -->
+      <!-- class="text-no-wrap" は文字を折り返さないようにするクラス -->
+      <!-- :header はヘッダー設定 -->
+      <!-- :items はテーブルに表示するデータ -->
+      <!-- :search は検索する文字列 -->
+      <!-- :footer-props はフッター設定 -->
+      <!-- :loading はローディング状態 -->
+      <!-- :sord-by はソート初期設定（列名） -->
+      <!-- :sord-desc はソート初期設定（降順） -->
+      <!-- :items-per-page はテーブルに最大何件表示させるか -->
+      <!-- mobile-breakpoint はモバイル表示にさせる画面サイズ（今回はモバイル表示させたくないので、 0 を設定） -->
+      <v-data-table
+        class="text-no-wrap"
+        :headers="tableHeaders"
+        :items="tableData"
+        :search="search"
+        :footer-props="footerProps"
+        :loading="loading"
+        :sort-by="'data'"
+        :sort-desc="true"
+        :items-per-page="30"
+        mobile-breakpoint="0"
+      ></v-data-table>
+    </v-card>
   </div>
 </template>
 
 <script>
 export default {
   name: "Home",
+
+  data() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = ("0" + (today.getMonth() + 1)).slice(-2);
+
+    return {
+      /** ローディング状態 */
+      loading: false,
+      /** 月選択メニューの状態 */
+      menu: false,
+      /** 検索文字 */
+      search: "",
+      /** 選択年月 */
+      yearMonth: `${year}-${month}`,
+      /** テーブルに表示させるデータ */
+      tableData: [
+        /** サンプルデータ */
+        {
+          id: "a34109ed",
+          date: "2020-06-01",
+          title: "支出サンプル",
+          category: "買い物",
+          tags: "タグ1",
+          income: null,
+          outgo: 2000,
+          memo: "メモ",
+        },
+        {
+          id: "7c8fa764",
+          date: "2020-06-02",
+          title: "収入サンプル",
+          category: "給料",
+          tags: "タグ1,タグ2",
+          income: 2000,
+          outgo: null,
+          memo: "メモ",
+        },
+      ],
+    };
+  },
+  computed: {
+    /** テーブルヘッダー設定
+     * text には表示させる列名、value には表示させるデータ（data()）のキーを設定。
+     * align でテキストの寄せる方向、sortable で疎とか日を設定可能。
+     */
+    tableHeaders() {
+      return [
+        { text: "日付", value: "date", align: "end" },
+        { text: "タイトル", value: "title", sortable: false },
+        { text: "カテゴリ", value: "category", sortable: false },
+        { text: "タグ", value: "tags", sortable: false },
+        { text: "収入", value: "income", align: "end" },
+        { text: "支出", value: "outgo", align: "end" },
+        { text: "メモ", value: "memo", sortable: false },
+        { text: "操作", value: "actions", sortable: false },
+      ];
+    },
+
+    /** テーブルのフッター設定 */
+    footerProps() {
+      return { itemsPerPageText: "", itemsPerPageOptions: [] };
+    },
+  },
 };
 </script>
