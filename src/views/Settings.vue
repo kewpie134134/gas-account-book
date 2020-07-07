@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h1>Home コンポーネントだよ</h1>
+    <h1>Settings コンポーネントだよ</h1>
   </div>
 </template>
 
 <script>
 export default {
-  name: "Home",
+  name: "Settings",
 };
 </script>
