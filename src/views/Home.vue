@@ -68,7 +68,7 @@
       <!-- :footer-props はフッター設定 -->
       <!-- :loading はローディング状態 -->
       <!-- :sord-by はソート初期設定（列名） -->
-      <!-- :sord-desc はソート初期設定（降順） -->
+      <!-- :sord-desc はソート初期設定（昇順） -->
       <!-- :items-per-page はテーブルに最大何件表示させるか -->
       <!-- mobile-breakpoint はモバイル表示にさせる画面サイズ（今回はモバイル表示させたくないので、 0 を設定） -->
       <v-data-table
@@ -78,11 +78,46 @@
         :search="search"
         :footer-props="footerProps"
         :loading="loading"
-        :sort-by="'data'"
-        :sort-desc="true"
+        :sort-by="'date'"
+        :sort-desc="false"
         :items-per-page="30"
         mobile-breakpoint="0"
-      ></v-data-table>
+      >
+        <!-- Vuetify の決まり事で、v-data-table 内の template で v-slot:item.列名="{ item }" -->
+        <!-- とすると、その列のデータを加工することができる -->
+
+        <!-- 日付列 -->
+        <template v-slot:item.date="{ item }">
+          <!-- この中で、日付は item.date でアクセスできる -->
+          <!-- "2020-06-01" ⇒ "1日" に加工 -->
+          {{ parseInt(item.date.slice(-2)) + "日" }}
+        </template>
+        <!-- タグ列 -->
+        <template v-slot:item.tags="{ item }">
+          <div v-if="item.tags">
+            <v-chip
+              class="mr-2"
+              v-for="(tag, i) in item.tags.split(',')"
+              :key="i"
+            >
+              {{ tag }}
+            </v-chip>
+          </div>
+        </template>
+        <!-- 収入列 -->
+        <template v-slot:item.income="{ item }">
+          {{ separate(item.income) }}
+        </template>
+        <!-- 支出列 -->
+        <template v-slot:item.outgo="{ item }">
+          {{ separate(item.outgo) }}
+        </template>
+        <!-- 操作列 -->
+        <template v-slot:item.actions="{}">
+          <v-icon class="mr-2">mdi-pencil</v-icon>
+          <v-icon>mdi-delete</v-icon>
+        </template>
+      </v-data-table>
     </v-card>
   </div>
 </template>
@@ -90,7 +125,6 @@
 <script>
 export default {
   name: "Home",
-
   data() {
     const today = new Date();
     const year = today.getFullYear();
@@ -152,6 +186,17 @@ export default {
     /** テーブルのフッター設定 */
     footerProps() {
       return { itemsPerPageText: "", itemsPerPageOptions: [] };
+    },
+  },
+  methods: {
+    /**
+     * 数字を3桁区切りにして返す。
+     * 受け取った数が null の場合は null を返す。
+     */
+    separate(num) {
+      return num !== null
+        ? num.toString().replace(/(\d)(?=(\d{3})+$)/g, "$1,")
+        : null;
     },
   },
 };
