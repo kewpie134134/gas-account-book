@@ -86,7 +86,7 @@
           <!-- メモ -->
           <v-text-field
             label="メモ"
-            v-model="menu"
+            v-model="memo"
             :counter="50"
             :rules="[memoRule]"
           />
