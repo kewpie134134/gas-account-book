@@ -42,7 +42,7 @@
         <v-spacer />
         <!-- 追加ボタン -->
         <v-col class="text-right" cols="4">
-          <v-btn dark color="green">
+          <v-btn dark color="green" @click="onClickAdd">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-col>
@@ -113,18 +113,28 @@
           {{ separate(item.outgo) }}
         </template>
         <!-- 操作列 -->
-        <template v-slot:item.actions="{}">
-          <v-icon class="mr-2">mdi-pencil</v-icon>
+        <template v-slot:item.actions="{ item }">
+          <v-icon class="mr-2" @click="onClickEdit(item)">mdi-pencil</v-icon>
           <v-icon>mdi-delete</v-icon>
         </template>
       </v-data-table>
     </v-card>
+    <!-- 追加/編集ダイアログ -->
+    <!-- コンポーネントの子要素には "ref" 属性をつけると、 -->
+    <!-- this.$refs.名前 でアクセスすることが可能 -->
+    <ItemDialog ref="itemDialog" />
   </div>
 </template>
 
 <script>
+import ItemDialog from "../components/ItemDialog.vue";
+
 export default {
   name: "Home",
+  components: {
+    ItemDialog,
+  },
+
   data() {
     const today = new Date();
     const year = today.getFullYear();
@@ -197,6 +207,14 @@ export default {
       return num !== null
         ? num.toString().replace(/(\d)(?=(\d{3})+$)/g, "$1,")
         : null;
+    },
+    /** 追加ボタンがクリックされた時 */
+    onClickAdd(item) {
+      this.$refs.itemDialog.open("add", item);
+    },
+    /** 編集ボタンがクリックされた時 */
+    onClickEdit(item) {
+      this.$refs.itemDialog.open("edit", item);
     },
   },
 };
