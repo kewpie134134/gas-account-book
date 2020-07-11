@@ -8,12 +8,8 @@ const ss = SpreadsheetApp.getActive()
  * API成功時には何かしらの結果を返し、エラー時は {error: "メッセージ"} を返す仕様とする。
  */
 
-/**
- * データの追加（onPost）と、
- * 入力データのバリデーションチェックを行う isValid を作成する。
- */
 function test(){
-  const result = onGet({ yearMonth: "2020-07" })
+  const result = onDelete({ yearMonth: "2020-07", id: "xxxxxxxx" })
   console.log(result)
 }
 
@@ -92,6 +88,44 @@ function onPost ({ item }) {
   sheet.appendRow(row)  // シートには appendRow というメソッドがあり、引数に配列を渡すだけでデータの追加が可能
 
   return { id, date, title, category, tags, income, outgo, memo }
+}
+          
+/**
+ * 指定年月 & id のデータを削除する
+ * @param {Object} params
+ * @param {String} params.yearMonth 年月
+ * @param {String} params.id id
+ * @returns {Object} メッセージ
+ */
+function onDelete ({ yearMonth, id }){
+  const ymReg = /^[0-9]{4}-(0[1-9]|1[0-2])$/
+  const sheet = ss.getSheetByName(yearMonth)
+          
+  if (!ymReg.test(yearMonth) || sheet === null) {
+    return{
+      error: "指定のシートは存在しません"
+    }
+  }
+
+  /**
+  * A7:A{最終行} で範囲の値を取得すると、2次元配列になっているので、フラットにしてから id を検索している。
+   */
+  const lastRow = sheet.getLastRow()
+  const index = sheet.getRange("A7:A" + lastRow).getValues().flat().findIndex(v => v ===id)
+  
+  if (index === -1) {
+    return {
+      error: "指定のデータは存在しません"
+    }
+  }
+
+  /**
+   * インデックスが見つかれば、インデックスに7行分足した行を削除する。
+   */
+  sheet.deleteRow(index + 7)
+  return {
+    message: "削除完了しました"
+  }
 }
 
 /** --- common --- */
