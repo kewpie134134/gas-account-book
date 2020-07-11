@@ -3,10 +3,60 @@
  */
 const ss = SpreadsheetApp.getActive()
 
+/**
+ * API作成
+ * API成功時には何かしらの結果を返し、エラー時は {error: "メッセージ"} を返す仕様とする。
+ */
+
+/**
+ * データの追加（onPost）と、
+ * 入力データのバリデーションチェックを行う isValid を作成する。
+ */
 function test(){
-  insertTemplate("2020-06")
+  onPost({
+    item: {
+      date: "2020-07-01",
+      title: "支出サンプル",
+      category: "食費",
+      tags: "タグ1, タグ2",
+      income: null,
+      outgo: 3000,
+      memo: "メモメモ"
+    }
+  })
 }
 
+/** --- API --- */
+
+/** 
+ * データを追加する
+ * @param {Object} params
+ * @param {Object} params.item 家計簿データ
+ * @returns {Object} 追加したデータ
+ */
+function onPost ({ item }) {
+  if (!isValid(item)) {
+    return {
+      error: '正しい形式で入力してください'
+    }
+  }
+  const { date, title, category, tags, income, outgo, memo } = item
+
+  // 指定年月のシートを取得する、なかったらテンプレートシートを取得する
+  const yearMonth = date.slice(0, 7)
+  const sheet = ss.getSheetByName(yearMonth) || insertTemplate(yearMonth)
+
+  // IDは Utilities の getUuid を利用して、UUID の先頭8文字だけ切り取るという謎のプログラムで生成している
+  const id = Utilities.getUuid().slice(0, 8)
+  // 収支以外は文字列として扱ってほしいため、値の前にシングルクォートを付与してからシートに追加する（ポイント）
+  const row = ["'" + id, "'" + date, "'" + title, "'" + category, "'" + tags, income, outgo, "'" + memo]
+  sheet.appendRow(row)  // シートには appendRow というメソッドがあり、引数に配列を渡すだけでデータの追加が可能
+
+  return { id, date, title, category, tags, income, outgo, memo }
+}
+
+/** --- common --- */
+ 
 /** 
  * 指定年月のテンプレートシートを作成する
  * @param {String} yearMonth
@@ -80,4 +130,38 @@ function insertTemplate (yearMonth) {
   sheet.setColumnWidth(9, 21)
 
   return sheet
+}
+
+/**
+ * データが正しい形式か検証する
+ * @param {Object} item
+ * @returns {Boolean} isValid
+ */
+function isValid (item = {}) {
+  const strKeys = ["date", "title", "category", "tags", "memo"]
+  const keys = [...strKeys, "income", "outgo"]
+          
+  // すべてのキーが存在するか
+  for (const key of keys) {
+    if (item[key] === undefined) return false
+  }
+          
+  // 収支以外が文字列であるか
+  for (const key of strKeys) {
+    if (typeof item[key] !== 'string') return false
+  }
+
+  // 日付が正しい形式であるか
+  const dateReg = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+  if (!dateReg.test(item.date)) return false
+
+  // 収支のどちらかが入力されているか
+  const { income: i, outgo: o } = item
+  if ((i === null && o === null) || (i !== null && o !== null)) return false
+
+  // 入力された収支が数字であるか
+  if (i !== null && typeof i !== 'number') return false
+  if (o !== null && typeof o !== 'number') return false
+
+  return true
 }
