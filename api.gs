@@ -13,20 +13,59 @@ const ss = SpreadsheetApp.getActive()
  * 入力データのバリデーションチェックを行う isValid を作成する。
  */
 function test(){
-  onPost({
-    item: {
-      date: "2020-07-01",
-      title: "支出サンプル",
-      category: "食費",
-      tags: "タグ1, タグ2",
-      income: null,
-      outgo: 3000,
-      memo: "メモメモ"
-    }
-  })
+  const result = onGet({ yearMonth: "2020-07" })
+  console.log(result)
 }
 
 /** --- API --- */
+
+/**
+ * 指定年月のデータ一覧を取得する
+ * @param {Object} params
+ * @param {String} params.yearMonth 年月
+ * @returns {Object[]} 家計簿データ
+ */
+function onGet ({ yearMonth }) {
+  const ymReg = /^[0-9]{4}-(0[1-9]|1[0-2])$/
+  
+  if (!ymReg.test(yearMonth)) {
+    return {
+      error: "正しい形式で入力してください"
+    }
+  }
+  
+  const sheet = ss.getSheetByName(yearMonth)
+  const lastRow = sheet ? sheet.getLastRow() : 0
+  
+  if (lastRow < 7) {
+    return []
+  }
+  
+  /** 
+   * テーブルヘッダーが A6:H6 にあるので、A7:H{最終行} のデータを取得する。
+   * データの最終行は getLastRow で取得できる。
+   * 指定年月のシートが存在しない場合も考慮し、最終行が7未満の場合は空の配列を返す。
+   * 
+   * データを返すときはオブジェクトにして返したいので、
+   * getValues で受け取った2次元配列を map でオブジェクトに加工する。
+   * 空白セルは ("") として取得されるので、収支だけ注意する必要がある（ポイント）
+   */
+  const list = sheet.getRange('A7:H' + lastRow).getValues().map(row => {
+    const [id, date, title, category, tags, income, outgo, memo] = row
+    return {
+      id,
+      date,
+      title,
+      category,
+      tags,
+      income: (income === '') ? null : income,
+      outgo: (outgo === '') ? null : outgo,
+      memo
+    }
+  })
+
+  return list
+}
 
 /** 
  * データを追加する
