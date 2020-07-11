@@ -4,6 +4,79 @@
 const ss = SpreadsheetApp.getActive()
 
 /**
+ * 認証情報トークンを設定する
+ * 誰でもアクセス可能な URL を発行するので、認証情報 authToken を持っている人しかアクセスできないようにする
+ * 認証情報はソースコードに書きたくないため、PropertiesService を利用して、スクリプトのプロパティから取得する
+ * 
+ * （GUIで取得する場合）
+ * 「ファイル」タブ -> 「プロジェクトのプロパティ」 -> 「スクリプトのプロパティ」から設定できる。
+ */
+const authToken = PropertiesService.getScriptProperties().getProperty("authToken") || ""
+
+/**
+ * レスポンスを作成して返す
+ * @param {*} content
+ * @returns {TextOutput}
+ */
+function response (content) {
+  // GAS でレスポンスを返す時は、 ContentService を利用する
+  const res = ContentService.createTextOutput()
+  // レスポンスの Content-Type ヘッダーに "application/json" を設定する
+  // また、作成した API では JSON しか返さないので、mime type には MimeType.JSON を指定する
+  res.setMimeType(ContentService.MimeType.JSON)
+  // オブジェクトを文字列にしてから、レスポンスに詰め込む
+  res.setContent(JSON.stringify(content))
+  return res
+}
+
+/**
+ * アプリに POST リクエストが送信された時に実行される
+ * @param {Event} e
+ * @returns {TextOutput}
+ * 
+ * 送られてきたリクエストは e.postData.contents で取得できる
+ * 文字列のため、JSON にパースする（一応 try-catch で囲んでおく）。
+ */
+function doPost (e) {
+  let contents
+  try {
+    contents = JSON.parse(e.postData.contents)
+  } catch (e) {
+    return response({ error: "JSONの形式が正しくありません"　})
+  }
+  
+  if (contents.authToken !== authToken) {
+    return response({ error: "認証に失敗しました "})
+  }
+  
+  const { method = "", params = {} } = contents
+  
+  let result
+  try {
+    switch (method) {
+      case "POST":
+        result = onPost(params)
+        break
+      case "GET":
+        result = onGet(params)
+        break
+      case "PUT":
+        result = onPut(params)
+        break
+      case "DELETE":
+        result = onDelete(params)
+        break
+      default:
+        result = { error: "methodを指定してください"}
+    }
+  } catch (e) {
+    result = { error: e } 
+  }
+  
+  return response(result)
+}
+
+/**
  * API作成
  * API成功時には何かしらの結果を返し、エラー時は {error: "メッセージ"} を返す仕様とする。
  */
