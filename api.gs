@@ -42,14 +42,17 @@ function doPost (e) {
   try {
     contents = JSON.parse(e.postData.contents)
   } catch (e) {
+    log('warn', '[doPost] JSONのパースに失敗しました')
     return response({ error: "JSONの形式が正しくありません"　})
   }
   
   if (contents.authToken !== authToken) {
+    log('warn', '[doPost] 認証に失敗しました')
     return response({ error: "認証に失敗しました "})
   }
   
   const { method = "", params = {} } = contents
+  log('info', `[doPost] "${method}" リクエストを受け取りました`)
   
   let result
   try {
@@ -70,6 +73,7 @@ function doPost (e) {
         result = { error: "methodを指定してください"}
     }
   } catch (e) {
+    log('error', '[doPost] ' + e)
     result = { error: e } 
   }
   
@@ -170,6 +174,8 @@ function onPost ({ item }) {
   // 収支以外は文字列として扱ってほしいため、値の前にシングルクォートを付与してからシートに追加する（ポイント）
   const row = ["'" + id, "'" + date, "'" + title, "'" + category, "'" + tags, income, outgo, "'" + memo]
   sheet.appendRow(row)  // シートには appendRow というメソッドがあり、引数に配列を渡すだけでデータの追加が可能
+  
+  log('info', `[onPost] データを追加しました シート名: ${yearMonth} id: ${id}`)
 
   return { id, date, title, category, tags, income, outgo, memo }
 }
@@ -207,6 +213,8 @@ function onDelete ({ yearMonth, id }){
    * インデックスが見つかれば、インデックスに7行分足した行を削除する。
    */
   sheet.deleteRow(index + 7)
+  log('info', `[onDelete] データを削除しました シート名: ${yearMonth} id: ${id}`)
+  
   return {
     message: "削除完了しました"
   }
@@ -263,6 +271,8 @@ function onPut ({ beforeYM, item }) {
    */
   const values = [["'" + date, "'" + title, "'" + category, "'" + tags, income, outgo, "'" + memo]]
   sheet.getRange(`B${row}:H${row}`).setValues(values)
+  
+  log('info', `[onPut] データを更新しました シート名: ${yearMonth} id: ${id}`)
   
   return { id, date, title, category, tags, income, outgo, memo }
 }
@@ -340,6 +350,8 @@ function insertTemplate (yearMonth) {
     .setNumberFormat('0.0%')
 
   sheet.setColumnWidth(9, 21)
+          
+  log('info', '[insertTemplate] シートを作成しました シート名: ' + yearMonth)
 
   return sheet
 }
@@ -376,4 +388,22 @@ function isValid (item = {}) {
   if (o !== null && typeof o !== 'number') return false
 
   return true
+}
+  
+/** --- Log --- */
+
+const logMaxRow = 101  // ログは最大100件まで保存
+const logSheet = ss.getSheetByName("log")
+  
+/**
+ * ログをシートに記録する
+ * @param {String} level
+ * @param {String} message
+ */
+function log (level, message) {
+  logSheet.appendRow([new Date(), level.toUpperCase(), message])
+  
+  if (logMaxRow < logSheet.getLastRow()){
+    logSheet.deleteRow(2)
+  }
 }
