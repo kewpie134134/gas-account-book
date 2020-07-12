@@ -24,6 +24,9 @@
         <router-view></router-view>
       </v-container>
     </v-main>
+    <!-- スナックバー -->
+    <!-- 通信でエラーが起きたときにメッセージを表示させる -->
+    <v-snackbar v-model="snackbar" color="error">{{ errorMessage }}</v-snackbar>
   </v-app>
 </template>
 
@@ -33,9 +36,15 @@ import { mapState } from "vuex";
 export default {
   name: "App",
 
-  /** 
-   * mapState を使うとStateのアクセスを簡潔にできる 
-   * 
+  data() {
+    return {
+      snackbar: false,
+    };
+  },
+
+  /**
+   * mapState を使うとStateのアクセスを簡潔にできる
+   *
    * （例）
    * // mapState を使わないと…
    * this.$store.state.settings.appName // 長い
@@ -45,11 +54,24 @@ export default {
    */
   computed: mapState({
     appName: (state) => state.settings.appName,
+    errorMessage: (state) => state.errorMessage,
   }),
+
+  /**
+   * watch で errorMessage を監視して、変更の合ったタイミングでスナックバーを表示させる
+   * スナックバーは一定時間経過すると自動で消える
+   */
+  watch: {
+    // errorMessage に変更があったら
+    errorMessage() {
+      // スナックバーを表示
+      this.snackbar = true;
+    },
+  },
 
   // App インスタンス生成前に一度だけ実行される
   beforeCreate() {
-    this.$store.dispatch("localSettings");
+    this.$store.dispatch("loadSettings");
   },
 };
 </script>

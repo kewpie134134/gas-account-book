@@ -1,6 +1,9 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
+// 作成した API クライアントを使えるようにする
+import gasApi from "../api/gasApi";
+
 Vue.use(Vuex);
 
 /**
@@ -10,6 +13,18 @@ Vue.use(Vuex);
 const state = {
   /** 家計簿データ */
   abData: {},
+
+  /** ローディング状態 */
+  loading: {
+    fetch: false,
+    add: false,
+    update: false,
+    delete: false,
+  },
+
+  /** エラーメッセージ */
+  errorMessage: "",
+
   /** 設定 */
   settings: {
     appName: "GAS 家計簿",
@@ -56,20 +71,45 @@ const mutations = {
     }
   },
 
-  /** 設定を保存する */
+  /** ローディング状態をセットする */
+  setLoading(state, { type, v }) {
+    state.loading[type] = v;
+  },
+
+  /** エラーメッセージをセットする */
+  setErrorMessage(state, { message }) {
+    state.errorMessage = message;
+  },
+
+  /**
+   * 設定を保存する
+   * 内部で、アプリ設定の apiUrl, authToken を gasApiに反映させる
+   */
   saveSettings(state, { settings }) {
     state.settings = { ...settings };
-    document.title = state.settings.appName;
+    const { appName, apiUrl, authToken } = state.settings;
+    document.title = appName;
+    gasApi.setUrl(apiUrl);
+    gasApi.setAuthToken(authToken);
+    // 家計簿データを初期化
+    state.abData = {};
 
     localStorage.setItem("settings", JSON.stringify(settings));
   },
-  /** 設定を読み込む */
+
+  /**
+   * 設定を読み込む
+   * 内部で、アプリ設定の apiUrl, authToken を gasApiに反映させる
+   */
   loadSettings(state) {
     const settings = JSON.parse(localStorage.getItem("settings"));
     if (settings) {
       state.settings = Object.assign(state.settings, settings);
     }
-    document.title = state.settings.appName;
+    const { appName, apiUrl, authToken } = state.settings;
+    document.title = appName;
+    gasApi.setUrl(apiUrl);
+    gasApi.setAuthToken(authToken);
   },
 };
 
@@ -79,54 +119,81 @@ const mutations = {
  */
 const actions = {
   /** 指定年月の家計簿データを取得する */
-  fetchAbData({ commit }, { yearMonth }) {
-    // サンプルデータを初期値として入れる
-    const list = [
-      {
-        id: "a34109ed",
-        date: `${yearMonth}-01`,
-        title: "支出サンプル",
-        category: "買い物",
-        tags: "タグ1",
-        income: null,
-        outgo: 2000,
-        memo: "メモ",
-      },
-      {
-        id: "7c8fa764",
-        date: `${yearMonth}-02`,
-        title: "収入サンプル",
-        category: "給料",
-        tags: "タグ1,タグ2",
-        income: 2000,
-        outgo: null,
-        memo: "メモ",
-      },
-    ];
-    commit("setAbData", { yearMonth, list });
-  },
-  /** データを追加する */
-  addAbData({ commit }, { item }) {
-    commit("addAbData", { item });
-  },
-  /** データを更新する */
-  updateAbData({ commit }, { beforeYM, item }) {
-    const yearMonth = item.date.slice(0, 7);
-    // 更新前後で年月の変更が無ければそのまま値を更新
-    if (yearMonth === beforeYM) {
-      commit("updateAbData", { yearMonth, item });
-      return;
+  async fetchAbData({ commit }, { yearMonth }) {
+    const type = "fetch";
+    // 取得の前にローディングを true にする
+    commit("setLoading", { type, v: true });
+    try {
+      // API にリクエスト送信
+      const res = await gasApi.fetch(yearMonth);
+      // 取得できたら abDataにセットする
+      commit("setAbData", { yearMonth, list: res.data });
+    } catch (e) {
+      // エラーが起きたらメッセージをセットする
+      commit("setErrorMessage", { message: e });
+      // 空の配列を abData にセットする
+      commit("setAbData", { yearMonth, list: [] });
+    } finally {
+      // 最後に成功/失敗にかかわらず、ローディングを false にする
+      commit("setLoading", { type, v: false });
     }
+  },
+
+  /** データを追加する */
+  async addAbData({ commit }, { item }) {
+    const type = "add";
+    commit("setLoading", { type, v: true });
+    try {
+      const res = await gasApi.add(item);
+      commit("addAbData", { item: res.data });
+    } catch (e) {
+      commit("setErrorMessage", { message: e });
+    } finally {
+      commit("setLoading", { type, v: false });
+    }
+  },
+
+  /** データを更新する */
+  async updateAbData({ commit }, { beforeYM, item }) {
+    const type = "update";
+    const yearMonth = item.date.slice(0, 7);
+    commit("setLoading", { type, v: true });
+    try {
+      const res = await gasApi.update(beforeYM, item);
+      // 更新前後で年月の変更が無ければそのまま値を更新
+      if (yearMonth === beforeYM) {
+        commit("updateAbData", { yearMonth, item });
+        return;
+      }
+      const id = item.id;
+      commit("deleteAbData", { yearMonth: beforeYM, id });
+      commit("addAbData", { item: res.data });
+    } catch (e) {
+      commit("setErrorMessage", { message: e });
+    } finally {
+      commit("setLoading", { type, v: false });
+    }
+
     // 更新があれば、更新前年月のデータから削除して、新しくデータを追加する
     const id = item.id;
     commit("deleteAbData", { yearMonth: beforeYM, id });
     commit("addAbData", { item });
   },
+
   /** データを削除する */
-  deleteAbData({ commit }, { item }) {
+  async deleteAbData({ commit }, { item }) {
+    const type = "delete";
     const yearMonth = item.date.slice(0, 7);
     const id = item.id;
-    commit("deleteAbData", { yearMonth, id });
+    commit("setLoading", { type, v: true });
+    try {
+      await gasApi.delete(yearMonth, id);
+      commit("deleteAbData", { yearMonth, id });
+    } catch (e) {
+      commit("setErrorMessage", { message: e });
+    } finally {
+      commit("setLoading", { type, v: false });
+    }
   },
 
   /** 設定を保存する */
