@@ -138,23 +138,48 @@ const actions = {
       commit("setLoading", { type, v: false });
     }
   },
+
   /** データを追加する */
-  addAbData({ commit }, { item }) {
-    commit("addAbData", { item });
-  },
-  /** データを更新する */
-  updateAbData({ commit }, { beforeYM, item }) {
-    const yearMonth = item.date.slice(0, 7);
-    // 更新前後で年月の変更が無ければそのまま値を更新
-    if (yearMonth === beforeYM) {
-      commit("updateAbData", { yearMonth, item });
-      return;
+  async addAbData({ commit }, { item }) {
+    const type = "add";
+    commit("setLoading", { type, v: true });
+    try {
+      const res = await gasApi.add(item);
+      commit("addAbData", { item: res.data });
+    } catch (e) {
+      commit("setErrorMessage", { message: e });
+    } finally {
+      commit("setLoading", { type, v: false });
     }
+  },
+
+  /** データを更新する */
+  async updateAbData({ commit }, { beforeYM, item }) {
+    const type = "update";
+    const yearMonth = item.date.slice(0, 7);
+    commit("setLoading", { type, v: true });
+    try {
+      const res = await gasApi.update(beforeYM, item);
+      // 更新前後で年月の変更が無ければそのまま値を更新
+      if (yearMonth === beforeYM) {
+        commit("updateAbData", { yearMonth, item });
+        return;
+      }
+      const id = item.id;
+      commit("deleteAbData", { yearMonth: beforeYM, id });
+      commit("addAbData", { item: res.data });
+    } catch (e) {
+      commit("setErrorMessage", { message: e });
+    } finally {
+      commit("setLoading", { type, v: false });
+    }
+
     // 更新があれば、更新前年月のデータから削除して、新しくデータを追加する
     const id = item.id;
     commit("deleteAbData", { yearMonth: beforeYM, id });
     commit("addAbData", { item });
   },
+
   /** データを削除する */
   deleteAbData({ commit }, { item }) {
     const yearMonth = item.date.slice(0, 7);
