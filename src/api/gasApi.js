@@ -14,7 +14,7 @@ import axios from "axios";
 // 最初に、共通のヘッダーを設定した axios のインスタンス作成
 // インスタンス作成後は、get, post, put, delete などのメソッドが利用可能となる
 const gasApi = axios.create({
-  headers: { "content-type": "application/x-www-form-urlencode" },
+  headers: { "content-type": "application/x-www-form-urlencoded" },
 });
 
 /** response 共通処理 */
