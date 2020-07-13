@@ -2,7 +2,9 @@
 
 ## Demo
 
-[GAS 家計簿 (master branch ver.)](https://kewpie134134.github.io/gas-account-book/#/)
+[GAS 家計簿 (master branch ver.)](https://kewpie134134.github.io/gas-account-book/)
+
+[GAS 家計簿 (firebase ver.)](https://gas-account-book.web.app/)
 
 ## Project setup
 
