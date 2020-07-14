@@ -54,11 +54,14 @@
           >保存</v-btn
         >
       </v-row>
+      <v-card-text>{{ verName }}</v-card-text>
     </v-form>
   </div>
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   name: "Settings",
 
@@ -97,6 +100,10 @@ export default {
         itemMaxLength(v) <= 4 || "各タグは4文字以内で入力してください",
     };
   },
+
+  computed: mapState({
+    verName: (state) => state.version.verName,
+  }),
 
   methods: {
     /** 保存ボタンがクリックされた時 */
