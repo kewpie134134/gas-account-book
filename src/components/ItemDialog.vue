@@ -100,18 +100,16 @@
           text
           :disabled="loading"
           @click="onClickClose"
+          >キャンセル</v-btn
         >
-          キャンセル
-        </v-btn>
         <v-btn
           color="blue darken-1"
           text
           :disabled="!valid"
           :loading="loading"
           @click="onClickAction"
+          >{{ actionText }}</v-btn
         >
-          {{ actionText }}
-        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
