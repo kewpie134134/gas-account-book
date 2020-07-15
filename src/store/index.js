@@ -38,7 +38,7 @@ const state = {
 
   /** バージョン管理 */
   version: {
-    verName: "Version 0.2.0-dev",
+    verName: "Version 0.1.2-dev",
   },
 };
 
