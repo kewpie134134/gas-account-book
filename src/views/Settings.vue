@@ -56,6 +56,11 @@
       </v-row>
       <v-card-text>{{ verName }}</v-card-text>
     </v-form>
+
+    <!-- 設定保存時のスナックバー -->
+    <v-snackbar v-model="snackbar" color="success" timeout="3000"
+      >設定を保存しました</v-snackbar
+    >
   </div>
 </template>
 
@@ -77,6 +82,10 @@ export default {
     return {
       /** 入力したデータが有効かどうか */
       valid: false,
+
+      /** 設定保存時のスナックバーの表示フラグ */
+      snackbar: false,
+
       /**
        * 設定（Vuexのstateから値を取得）
        * 各コンポーネントでストアには $store でアクセス可能。
@@ -114,6 +123,8 @@ export default {
        * dispatch("Action名", ペイロード)
        */
       this.$store.dispatch("saveSettings", { settings: this.settings });
+      /** 設定が保存されたらスナックバーを表示させる */
+      this.snackbar = true;
     },
   },
 };
