@@ -125,7 +125,7 @@ export default {
     return {
       /** ダイアログの表示状態 */
       show: false,
-      /** 入力したデータが行こうかどうか */
+      /** 入力したデータが有効かどうか */
       valid: false,
       /** 日付選択メニューの表示状態 */
       menu: false,
