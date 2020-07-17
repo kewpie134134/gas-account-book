@@ -28,12 +28,14 @@
       <p>カンマ（ &#44; ）区切りで入力してください。</p>
       <!-- 収入カテゴリ -->
       <!-- スプレッド構文 (...) を使用 -->
-      <v-text-field
-        label="収入カテゴリ"
-        v-model="settings.strIncomeItems"
-        :counter="150"
-        :rules="[stringRule, ...categoryRules]"
-      />
+      <template v-if="showIncomeCategory">
+        <v-text-field
+          label="収入カテゴリ"
+          v-model="settings.strIncomeItems"
+          :counter="150"
+          :rules="[stringRule, ...categoryRules]"
+        />
+      </template>
       <!-- 支出カテゴリ -->
       <v-text-field
         label="支出カテゴリ"
@@ -91,6 +93,9 @@ export default {
 
       /** 設定内容が変わったかどうか */
       changedSettings: false,
+
+      /** 収入項目を表示するかどうか */
+      showIncomeCategory: false,
 
       /**
        * 設定（Vuexのstateから値を取得）
