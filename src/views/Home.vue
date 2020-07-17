@@ -50,8 +50,7 @@
           <div class="summary">
             <div class="mr-4">
               <table class="text-right">
-                <!-- 収入が 0 円の時、収入情報を隠す -->
-                <template v-if="sum.income != 0">
+                <template v-if="showIncomeCategory">
                   <tr>
                     <td>収入：</td>
                     <td>{{ separate(sum.income) }}</td>
@@ -61,8 +60,7 @@
                   <td>支出：</td>
                   <td>{{ separate(sum.outgo) }}</td>
                 </tr>
-                <!-- 収入が 0 円の時、収支差情報を隠す -->
-                <template v-if="sum.income != 0">
+                <template v-if="showIncomeCategory">
                   <tr>
                     <td>収支差：</td>
                     <td>{{ separate(sum.income - sum.outgo) }}</td>
@@ -109,7 +107,7 @@
       <!-- :sord-by はソート初期設定（列名） -->
       <!-- :sord-desc はソート初期設定（昇順） -->
       <!-- :items-per-page はテーブルに最大何件表示させるか -->
-      <!-- mobile-breakpoint はモバイル表示にさせる画面サイズ（今回はモバイル表示させたくないので、 0 を設定） -->
+      <!-- mobile-breakpoint はモバイル表示にさせる画面サイズ（今回はモバイル表示させたくないので、0 を設定） -->
       <v-data-table
         class="text-no-wrap"
         :headers="tableHeaders"
@@ -194,6 +192,8 @@ export default {
       yearMonth: `${year}-${month}`,
       /** テーブルに表示させるデータ */
       tableData: [],
+      /** 収入項目を表示するかどうか */
+      showIncomeCategory: false,
     };
   },
   computed: {
