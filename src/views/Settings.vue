@@ -50,7 +50,10 @@
       />
       <v-row class="mt-4">
         <v-spacer />
-        <v-btn color="primary" :disabled="!valid" @click="onClickSave"
+        <v-btn
+          color="primary"
+          :disabled="!valid || !changedSettings"
+          @click="onClickSave"
           >保存</v-btn
         >
       </v-row>
@@ -85,6 +88,9 @@ export default {
 
       /** 設定保存時のスナックバーの表示フラグ */
       snackbar: false,
+
+      /** 設定内容が変わったかどうか */
+      changedSettings: false,
 
       /**
        * 設定（Vuexのstateから値を取得）
@@ -125,6 +131,29 @@ export default {
       this.$store.dispatch("saveSettings", { settings: this.settings });
       /** 設定が保存されたらスナックバーを表示させる */
       this.snackbar = true;
+    },
+  },
+
+  watch: {
+    /**
+     * settings のオブジェクトを監視する
+     * オプション "deep" を使用することで、オブジェクト内の要素に変更があったことを watch できる
+     */
+    settings: {
+      handler() {
+        // オブジェクトを文字列に変換し、オブジェクト内の要素を比較する
+        if (
+          JSON.stringify(this.settings) ===
+          JSON.stringify({ ...this.$store.state.settings })
+        ) {
+          this.changedSettings = false;
+          console.log("値に変化なし");
+          return;
+        }
+        this.changedSettings = true;
+        console.log("値が変化したよ！");
+      },
+      deep: true,
     },
   },
 };
