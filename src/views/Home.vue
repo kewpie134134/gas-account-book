@@ -50,18 +50,24 @@
           <div class="summary">
             <div class="mr-4">
               <table class="text-right">
-                <tr>
-                  <td>収入：</td>
-                  <td>{{ separate(sum.income) }}</td>
-                </tr>
+                <!-- 収入が 0 円の時、収入情報を隠す -->
+                <template v-if="sum.income != 0">
+                  <tr>
+                    <td>収入：</td>
+                    <td>{{ separate(sum.income) }}</td>
+                  </tr>
+                </template>
                 <tr>
                   <td>支出：</td>
                   <td>{{ separate(sum.outgo) }}</td>
                 </tr>
-                <tr>
-                  <td>収支差：</td>
-                  <td>{{ separate(sum.income - sum.outgo) }}</td>
-                </tr>
+                <!-- 収入が 0 円の時、収支差情報を隠す -->
+                <template v-if="sum.income != 0">
+                  <tr>
+                    <td>収支差：</td>
+                    <td>{{ separate(sum.income - sum.outgo) }}</td>
+                  </tr>
+                </template>
               </table>
             </div>
             <div v-for="category in sum.categories" :key="category[0]">
