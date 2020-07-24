@@ -41,7 +41,7 @@ const state = {
 
   /** バージョン管理 */
   version: {
-    verName: "Version 0.1.4",
+    verName: "Version 0.1.5",
   },
 };
 
