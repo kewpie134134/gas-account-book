@@ -1,6 +1,6 @@
 <template>
   <div class="form-wrapper">
-    <p>設定はこのデバイスのみに保存されます。<v-btn>収入項目表示</v-btn></p>
+    <p>設定はこのデバイスのみに保存されます。</p>
     <v-form v-model="valid">
       <h3>アプリ設定</h3>
       <!-- アプリ名 -->
