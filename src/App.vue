@@ -10,6 +10,10 @@
         <!-- クリックで "/" へ移動する -->
         <v-icon>mdi-file-table-outline</v-icon>
       </v-btn>
+      <!-- 年次カレンダーのボタン -->
+      <v-btn icon to="/summary">
+        <v-icon>mdi-calendar-month</v-icon>
+      </v-btn>
       <!-- 歯車アイコンのボタン -->
       <v-btn icon to="/settings">
         <!-- クリックで "/settings" へ移動する -->
