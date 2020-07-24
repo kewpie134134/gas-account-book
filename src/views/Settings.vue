@@ -153,11 +153,9 @@ export default {
           JSON.stringify({ ...this.$store.state.settings })
         ) {
           this.changedSettings = false;
-          console.log("値に変化なし");
           return;
         }
         this.changedSettings = true;
-        console.log("値が変化したよ！");
       },
       deep: true,
     },
