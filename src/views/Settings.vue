@@ -1,6 +1,6 @@
 <template>
   <div class="form-wrapper">
-    <p>設定はこのデバイスのみに保存されます。</p>
+    <p>設定はこのデバイスのみに保存されます。<v-btn>収入項目表示</v-btn></p>
     <v-form v-model="valid">
       <h3>アプリ設定</h3>
       <!-- アプリ名 -->
@@ -29,7 +29,7 @@
       <!-- 収入カテゴリ -->
       <!-- スプレッド構文 (...) を使用 -->
       <!-- 収入カテゴリは不要なため、v-if で非表示とする -->
-      <template v-if="showIncomeCategory">
+      <template v-if="showIncomeData">
         <v-text-field
           label="収入カテゴリ"
           v-model="settings.strIncomeItems"
@@ -95,9 +95,6 @@ export default {
       /** 設定内容が変わったかどうか */
       changedSettings: false,
 
-      /** 収入項目を表示するかどうか */
-      showIncomeCategory: false,
-
       /**
        * 設定（Vuexのstateから値を取得）
        * 各コンポーネントでストアには $store でアクセス可能。
@@ -123,7 +120,10 @@ export default {
   },
 
   computed: mapState({
+    /** 設定画面下にバージョン情報を記述する */
     verName: (state) => state.version.verName,
+    /** 「収入」項目を表示するかどうか */
+    showIncomeData: (state) => state.showIncomeData,
   }),
 
   methods: {

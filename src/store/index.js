@@ -36,6 +36,9 @@ const state = {
     strTagItems: "固定費, カード",
   },
 
+  /** 収入項目を表示するかどうか */
+  showIncomeData: false,
+
   /** バージョン管理 */
   version: {
     verName: "Version 0.1.4",

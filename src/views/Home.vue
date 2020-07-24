@@ -192,8 +192,6 @@ export default {
       yearMonth: `${year}-${month}`,
       /** テーブルに表示させるデータ */
       tableData: [],
-      /** 収入項目を表示するかどうか */
-      showIncomeData: false,
     };
   },
   computed: {
@@ -202,6 +200,8 @@ export default {
       abData: (state) => state.abData,
       /** ローディング状態 */
       loading: (state) => state.loading.fetch,
+      /** 「収入」項目を表示するかどうか */
+      showIncomeData: (state) => state.showIncomeData,
     }),
 
     /** テーブルヘッダー設定

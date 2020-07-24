@@ -155,8 +155,6 @@ export default {
       categoryItems: [],
       /** 編集前の年月（編集時に使う）*/
       beforeYM: "",
-      /** 収入項目を表示するかどうか */
-      showIncomeData: false,
 
       /** バリデーションルール
        *  ★書き方★
@@ -188,6 +186,8 @@ export default {
     ...mapState({
       /** ローディング状態 */
       loading: (state) => state.loading.add || state.loading.update,
+      /** 「収入」項目を表示するかどうか */
+      showIncomeData: (state) => state.showIncomeData,
     }),
     /** ダイアログのタイトル */
     titleText() {
