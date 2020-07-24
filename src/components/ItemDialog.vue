@@ -50,15 +50,17 @@
             :rules="titleRules"
           />
           <!-- 収支 -->
-          <v-radio-group
-            row
-            v-model="inout"
-            hide-details
-            @change="onChangeInout"
-          >
-            <v-radio label="収入" value="income" />
-            <v-radio label="支出" value="outgo" />
-          </v-radio-group>
+          <template v-if="showIncomeData">
+            <v-radio-group
+              row
+              v-model="inout"
+              hide-details
+              @change="onChangeInout"
+            >
+              <v-radio label="収入" value="income" />
+              <v-radio label="支出" value="outgo" />
+            </v-radio-group>
+          </template>
           <!-- カテゴリ -->
           <v-select
             label="カテゴリ"
@@ -153,6 +155,8 @@ export default {
       categoryItems: [],
       /** 編集前の年月（編集時に使う）*/
       beforeYM: "",
+      /** 収入項目を表示するかどうか */
+      showIncomeData: false,
 
       /** バリデーションルール
        *  ★書き方★
@@ -260,6 +264,7 @@ export default {
       this.id = item.id || "";
       this.date = item.date || `${year}-${month}-${date}`;
       this.title = item.title || "";
+      // 収支ラジオボタンの設定は、inout が null なら「支出」とする
       this.inout = item.income != null ? "income" : "outgo";
 
       if (this.inout === "income") {
